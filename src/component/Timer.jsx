@@ -10,7 +10,8 @@ function formatTime(totalSeconds) {
 
 export default function Timer() {
   const { remainingSeconds, isRunning, start, pause, stop } = useTimer(initialSeconds);
-  const isAtInitial = remainingSeconds === initialSeconds;
+  const isAtInitial = remainingSeconds === initialSeconds
+  const statusLabel = isRunning ? 'Running' : isAtInitial ? 'Ready' : 'Paused'
 
   return (
     <section>
@@ -18,7 +19,7 @@ export default function Timer() {
 
       <p>{formatTime(remainingSeconds)}</p>
 
-      <p>{isRunning ? "Running" : "Paused"}</p>
+      <p>{statusLabel}</p>
 
       <div>
         <button onClick={start} disabled={isRunning || remainingSeconds === 0}>Start</button>
