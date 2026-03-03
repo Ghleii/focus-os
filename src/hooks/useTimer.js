@@ -1,9 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react'
 
 export function useTimer(initialSeconds = 1500) {
     const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds)
     const [isRunning, setIsRunning] = useState(false)
     const intervalRef = useRef(null)
+
+    const clearTimer = () => {
+        if (!intervalRef.current) return
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+    }
 
     const start = () => {
         if (isRunning) return
@@ -12,11 +18,13 @@ export function useTimer(initialSeconds = 1500) {
 
     const pause = () => {
         if (!isRunning) return
+        clearTimer()
         setIsRunning(false)
     }
 
     const stop = () => {
         if (remainingSeconds === initialSeconds) return
+        clearTimer()
         setIsRunning(false)
         setRemainingSeconds(initialSeconds)
     }
@@ -26,6 +34,7 @@ export function useTimer(initialSeconds = 1500) {
         intervalRef.current = setInterval(() => {
             setRemainingSeconds(prev => {
                 if (prev <= 1) {
+                    clearTimer()
                     setIsRunning(false)
                     return 0
                 }
@@ -33,12 +42,8 @@ export function useTimer(initialSeconds = 1500) {
             })
         }, 1000)
 
-        return () => clearInterval(intervalRef.current)
+        return clearTimer
     }, [isRunning])
-
-    useEffect(() => {
-        console.log({ remainingSeconds, isRunning })
-    }, [remainingSeconds, isRunning])
 
   return { remainingSeconds, isRunning, start, pause, stop }
 }
