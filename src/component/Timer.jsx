@@ -19,23 +19,25 @@ export default function Timer() {
   const handleStop = () => {
     const actualSec = initialSeconds - remainingSeconds
 
-    if (actualSec > 0) {
-      const endedAt = new Date()
-      const startedAt = new Date(endedAt.getTime() - actualSec * 1000)
+    try {
+      if (actualSec > 0) {
+        const endedAt = new Date()
+        const startedAt = new Date(endedAt.getTime() - actualSec * 1000)
 
-      const next = appendSession({
-        id: crypto.randomUUID(),
-        taskId: 'task-1',
-        plannedSec: initialSeconds,
-        actualSec,
-        startedAt: startedAt.toISOString(),
-        endedAt: endedAt.toISOString(),
-      })
+        const next = appendSession({
+          id: crypto.randomUUID(),
+          taskId: 'task-1',
+          plannedSec: initialSeconds,
+          actualSec,
+          startedAt: startedAt.toISOString(),
+          endedAt: endedAt.toISOString(),
+        })
 
-      setSessions(next)
+        setSessions(next)
+      }
+    } finally {
+      stop()
     }
-
-    stop()
   }
 
   const todayTotalSec = sessions
