@@ -3,6 +3,11 @@ import { useTimer } from '../hooks/useTimer'
 import { appendSession, loadSessions } from '../lib/sessionStorage'
 
 const initialSeconds = 1500
+const TASK_OPTIONS = [
+  { id: 'task-1', label: 'Task 1' },
+  { id: 'task-2', label: 'Task 2' },
+  { id: 'task-3', label: 'Task 3' },
+]
 
 function formatTime(totalSeconds) {
   const minutes = Math.floor(totalSeconds / 60)
@@ -13,8 +18,10 @@ function formatTime(totalSeconds) {
 export default function Timer() {
   const { remainingSeconds, isRunning, start, pause, stop } = useTimer(initialSeconds)
   const [sessions, setSessions] = useState(() => loadSessions())
+  const [selectedTaskId, setSelectedTaskId] = useState(TASK_OPTIONS[0].id)
   const isAtInitial = remainingSeconds === initialSeconds
   const statusLabel = isRunning ? 'Running' : isAtInitial ? 'Ready' : 'Paused'
+  const selectedTaskLabel = TASK_OPTIONS.find((task) => task.id === selectedTaskId)?.label
 
   const handleStop = () => {
     const actualSec = initialSeconds - remainingSeconds
@@ -26,7 +33,7 @@ export default function Timer() {
 
         const next = appendSession({
           id: crypto.randomUUID(),
-          taskId: 'task-1',
+          taskId: selectedTaskId,
           plannedSec: initialSeconds,
           actualSec,
           startedAt: startedAt.toISOString(),
@@ -47,6 +54,21 @@ export default function Timer() {
   return (
     <section>
       <h2>Pomodoro Timer</h2>
+
+      <div>
+        {TASK_OPTIONS.map((task) => (
+          <button
+            key={task.id}
+            type="button"
+            onClick={() => setSelectedTaskId(task.id)}
+            disabled={!isAtInitial}
+          >
+            {selectedTaskId === task.id ? `● ${task.label}` : task.label}
+          </button>
+        ))}
+      </div>
+
+      <p>Current task: {selectedTaskLabel}</p>
 
       <p>{formatTime(remainingSeconds)}</p>
 
