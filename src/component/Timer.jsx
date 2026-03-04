@@ -61,7 +61,8 @@ export default function Timer() {
             key={task.id}
             type="button"
             onClick={() => setSelectedTaskId(task.id)}
-            disabled={!isAtInitial}
+            disabled={isRunning || !isAtInitial}
+            aria-pressed={selectedTaskId === task.id}
           >
             {selectedTaskId === task.id ? `● ${task.label}` : task.label}
           </button>
