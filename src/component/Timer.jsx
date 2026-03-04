@@ -1,6 +1,9 @@
-import { useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 import { useTimer } from '../hooks/useTimer'
-import { appendSession, loadSessions } from '../lib/sessionStorage'
+import { appendSession, loadSessions, removeSessionById } from '../lib/sessionStorage'
+import SessionHistory from './SessionHistory'
+
+const SessionAnalytics = lazy(() => import('./SessionAnalytics'))
 
 const initialSeconds = 1500
 const TASK_OPTIONS = [
@@ -51,6 +54,20 @@ export default function Timer() {
     .filter((session) => new Date(session.endedAt).toDateString() === new Date().toDateString())
     .reduce((sum, session) => sum + session.actualSec, 0)
 
+  const handleDeleteSession = (sessionId) => {
+    const targetSession = sessions.find((session) => session.id === sessionId)
+    const targetTaskLabel = TASK_OPTIONS.find((task) => task.id === targetSession?.taskId)?.label
+    const shouldDelete = window.confirm(
+      `${targetTaskLabel ? `${targetTaskLabel} のセッション` : 'このセッション'}を削除しますか？`,
+    )
+    if (!shouldDelete) {
+      return
+    }
+
+    const next = removeSessionById(sessionId)
+    setSessions(next)
+  }
+
   return (
     <section>
       <h2>Pomodoro Timer</h2>
@@ -87,6 +104,16 @@ export default function Timer() {
           Stop
         </button>
       </div>
+
+      <Suspense fallback={<p>Loading analytics...</p>}>
+        <SessionAnalytics sessions={sessions} taskOptions={TASK_OPTIONS} />
+      </Suspense>
+
+      <SessionHistory
+        sessions={sessions}
+        taskOptions={TASK_OPTIONS}
+        onDeleteSession={handleDeleteSession}
+      />
     </section>
   )
 }

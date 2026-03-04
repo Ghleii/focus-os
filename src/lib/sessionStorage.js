@@ -38,3 +38,10 @@ export function appendSession(session) {
   const saved = saveSessions(next)
   return saved ? next : sessions
 }
+
+export function removeSessionById(sessionId) {
+  const sessions = loadSessions()
+  const next = sessions.filter((session) => session.id !== sessionId)
+  const saved = saveSessions(next)
+  return saved ? next : sessions
+}
