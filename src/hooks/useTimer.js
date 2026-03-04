@@ -1,49 +1,49 @@
 import { useEffect, useRef, useState } from 'react'
 
 export function useTimer(initialSeconds = 1500) {
-    const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds)
-    const [isRunning, setIsRunning] = useState(false)
-    const intervalRef = useRef(null)
+  const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds)
+  const [isRunning, setIsRunning] = useState(false)
+  const intervalRef = useRef(null)
 
-    const clearTimer = () => {
-        if (!intervalRef.current) return
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-    }
+  const clearTimer = () => {
+    if (!intervalRef.current) return
+    clearInterval(intervalRef.current)
+    intervalRef.current = null
+  }
 
-    const start = () => {
-        if (isRunning) return
-        setIsRunning(true)
-    }
+  const start = () => {
+    if (isRunning) return
+    setIsRunning(true)
+  }
 
-    const pause = () => {
-        if (!isRunning) return
-        clearTimer()
-        setIsRunning(false)
-    }
+  const pause = () => {
+    if (!isRunning) return
+    clearTimer()
+    setIsRunning(false)
+  }
 
-    const stop = () => {
-        if (remainingSeconds === initialSeconds) return
-        clearTimer()
-        setIsRunning(false)
-        setRemainingSeconds(initialSeconds)
-    }
+  const stop = () => {
+    if (remainingSeconds === initialSeconds) return
+    clearTimer()
+    setIsRunning(false)
+    setRemainingSeconds(initialSeconds)
+  }
 
-    useEffect(() => {
-        if (!isRunning) return
-        intervalRef.current = setInterval(() => {
-            setRemainingSeconds(prev => {
-                if (prev <= 1) {
-                    clearTimer()
-                    setIsRunning(false)
-                    return 0
-                }
-                return prev - 1
-            })
-        }, 1000)
+  useEffect(() => {
+    if (!isRunning) return
+    intervalRef.current = setInterval(() => {
+      setRemainingSeconds((prev) => {
+        if (prev <= 1) {
+          clearTimer()
+          setIsRunning(false)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
 
-        return clearTimer
-    }, [isRunning])
+    return clearTimer
+  }, [isRunning])
 
   return { remainingSeconds, isRunning, start, pause, stop }
 }

@@ -10,18 +10,18 @@ It is built for users who want not only to track focus time, but also to better 
 
 ## Features
 
-* Pomodoro-style focus timer
-* Task-based session tracking
-* Daily focus time visualization
-* Planned vs actual time comparison
-* Lightweight analytics for reviewing work habits
+- Pomodoro-style focus timer
+- Task-based session tracking
+- Daily focus time visualization
+- Planned vs actual time comparison
+- Lightweight analytics for reviewing work habits
 
 ## Tech Stack
 
-* React
-* Vite
-* Recharts
-* Local Storage
+- React
+- Vite
+- Recharts
+- Local Storage
 
 ## Goal
 

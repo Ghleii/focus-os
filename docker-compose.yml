@@ -2,7 +2,7 @@ services:
   app:
     build: .
     ports:
-      - "5173:5173"
+      - '5173:5173'
     volumes:
       # ソースコードをマウント（ホットリロード用）
       - .:/app
