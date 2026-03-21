@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Bar,
   BarChart,
@@ -40,52 +41,57 @@ function buildDailyData(sessions) {
   })
 }
 
-function buildPlanVsActualData(sessions) {
-  const totals = sessions.reduce(
-    (acc, session) => {
-      acc.plannedSec += session.plannedSec
-      acc.actualSec += session.actualSec
-      return acc
-    },
-    { plannedSec: 0, actualSec: 0 },
-  )
-
-  return [
-    {
-      label: 'All Sessions',
-      planned: Math.round(totals.plannedSec / 60),
-      actual: Math.round(totals.actualSec / 60),
-    },
-  ]
-}
-
 function buildTaskData(sessions, taskOptions) {
-  const taskLabelMap = taskOptions.reduce((acc, task) => {
-    acc[task.id] = task.label
-    return acc
-  }, {})
-
   const totalsByTask = sessions.reduce((acc, session) => {
     const taskId = session.taskId
-    const taskLabel = taskLabelMap[taskId] ?? taskId
 
-    if (!acc[taskLabel]) {
-      acc[taskLabel] = 0
+    if (!acc[taskId]) {
+      acc[taskId] = {
+        actualSec: 0,
+        label: taskOptions.find(t => t.id === taskId)?.label || taskId,
+        estimatedSets: taskOptions.find(t => t.id === taskId)?.estimatedSets || 0
+      }
     }
 
-    acc[taskLabel] += session.actualSec
+    acc[taskId].actualSec += session.actualSec
     return acc
   }, {})
 
-  return Object.entries(totalsByTask)
-    .map(([task, totalSec]) => ({
-      task,
-      minutes: Math.round(totalSec / 60),
+  return Object.values(totalsByTask)
+    .map((taskData) => ({
+      task: taskData.label,
+      actual: Math.round(taskData.actualSec / 60),
+      estimated: (taskData.estimatedSets * 25) // Default to 25 mins per estimated set for chart scale
     }))
-    .sort((a, b) => b.minutes - a.minutes)
+    .sort((a, b) => b.actual - a.actual)
+}
+
+function buildTimelineData(sessions) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const todaySessions = sessions.filter(s => {
+    const d = new Date(s.endedAt)
+    return d.getTime() >= today.getTime()
+  })
+
+  return todaySessions.map((s, index) => {
+    const start = new Date(s.startedAt)
+    const end = new Date(s.endedAt)
+    return {
+      id: s.id,
+      index: index + 1,
+      name: `Session ${index + 1}`,
+      duration: Math.round(s.actualSec / 60),
+      timeRange: `${start.getHours()}:${String(start.getMinutes()).padStart(2, '0')} - ${end.getHours()}:${String(end.getMinutes()).padStart(2, '0')}`
+    }
+  })
 }
 
 export default function SessionAnalytics({ sessions, taskOptions }) {
+  const [activeTab, setActiveTab] = useState('daily')
+  const [selectedChartTaskId, setSelectedChartTaskId] = useState('all')
+
   if (!sessions.length) {
     return (
       <section>
@@ -96,47 +102,120 @@ export default function SessionAnalytics({ sessions, taskOptions }) {
   }
 
   const dailyData = buildDailyData(sessions)
-  const planVsActualData = buildPlanVsActualData(sessions)
-  const taskData = buildTaskData(sessions, taskOptions)
+  let taskData = buildTaskData(sessions, taskOptions)
+
+  // Filter taskData if a specific task is selected
+  if (selectedChartTaskId !== 'all') {
+    const selectedLabel = taskOptions.find(t => t.id === selectedChartTaskId)?.label
+    taskData = taskData.filter(d => d.task === selectedLabel)
+  }
+
+  const timelineData = buildTimelineData(sessions)
 
   return (
-    <section>
-      <h3>Analytics</h3>
+    <section style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div>
+        <h3 style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>Analytics</h3>
 
-      <h4>Daily Focus (Last 7 days)</h4>
-      <ResponsiveContainer width="100%" height={220}>
-        <BarChart data={dailyData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="day" />
-          <YAxis allowDecimals={false} />
-          <Tooltip />
-          <Bar dataKey="minutes" name="Focus (min)" fill="currentColor" />
-        </BarChart>
-      </ResponsiveContainer>
+        {/* Segmented Control / Tabs */}
+        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', padding: '0.25rem', gap: '0.25rem' }}>
+          {['daily', 'tasks', 'timeline'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                flex: 1,
+                padding: '0.5rem',
+                background: activeTab === tab ? 'rgba(255,255,255,0.2)' : 'transparent',
+                border: 'none',
+                borderRadius: '6px',
+                color: activeTab === tab ? '#fff' : 'rgba(255,255,255,0.6)',
+                fontWeight: activeTab === tab ? '600' : '400',
+                transition: 'all 0.2s',
+                textTransform: 'capitalize'
+              }}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      <h4>Planned vs Actual</h4>
-      <ResponsiveContainer width="100%" height={220}>
-        <BarChart data={planVsActualData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="label" />
-          <YAxis allowDecimals={false} />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="planned" name="Planned (min)" fill="currentColor" fillOpacity={0.35} />
-          <Bar dataKey="actual" name="Actual (min)" fill="currentColor" />
-        </BarChart>
-      </ResponsiveContainer>
+      {activeTab === 'daily' && (
+        <div>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={dailyData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="day" />
+              <YAxis allowDecimals={false} />
+              <Tooltip
+                contentStyle={{ backgroundColor: '#ffffff', border: 'none', borderRadius: '8px', color: '#000000', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                itemStyle={{ color: '#000000', fontWeight: '500' }}
+              />
+              <Bar dataKey="minutes" name="Focus (min)" fill="#69db7c" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
-      <h4>Focus by Task</h4>
-      <ResponsiveContainer width="100%" height={220}>
-        <BarChart data={taskData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="task" />
-          <YAxis allowDecimals={false} />
-          <Tooltip />
-          <Bar dataKey="minutes" name="Focus (min)" fill="currentColor" />
-        </BarChart>
-      </ResponsiveContainer>
+      {activeTab === 'tasks' && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <h4 style={{ margin: 0 }}>Estimation vs Actual (by Task)</h4>
+            <select
+              value={selectedChartTaskId}
+              onChange={(e) => setSelectedChartTaskId(e.target.value)}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                color: 'white',
+                padding: '0.3rem 0.5rem',
+                borderRadius: '6px',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="all" style={{ color: 'black' }}>All Tasks</option>
+              {taskOptions.map(task => (
+                <option key={task.id} value={task.id} style={{ color: 'black' }}>{task.label}</option>
+              ))}
+            </select>
+          </div>
+          <ResponsiveContainer width="100%" height={Math.max(250, taskData.length * 40 + 50)}>
+            <BarChart data={taskData} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" allowDecimals={false} />
+              <YAxis dataKey="task" type="category" width={80} />
+              <Tooltip
+                contentStyle={{ backgroundColor: '#ffffff', border: 'none', borderRadius: '8px', color: '#000000', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                itemStyle={{ color: '#000000', fontWeight: '500' }}
+              />
+              <Legend />
+              <Bar dataKey="estimated" name="Planned (Sets)" fill="#666666" />
+              <Bar dataKey="actual" name="Actual (Sets)" fill="#4dabf7" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {activeTab === 'timeline' && (
+        <div>
+          <h4>Today's Timeline</h4>
+          {timelineData.length === 0 ? (
+            <p style={{ opacity: 0.7, fontSize: '0.9rem' }}>No sessions yet today.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {timelineData.map(item => (
+                <div key={item.id} style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: '1rem', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '8px' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ffc078' }}></div>
+                  <span style={{ fontSize: '0.9rem' }}>{item.timeRange}</span>
+                  <span style={{ fontWeight: 'bold' }}>{item.duration} min</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </section>
   )
 }

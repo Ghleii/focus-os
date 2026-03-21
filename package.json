@@ -5,12 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:lan": "vite --host 0.0.0.0 --port 5173",
+    "dev:check": "bash -lc 'echo \"[proc]\" && (ps aux | grep -E \"vite|node.*5173\" | grep -v grep || echo \"no-vite-process\") && echo && echo \"[listen]\" && (ss -ltn | grep 5173 || echo \"no-listener-5173\") && echo && echo \"[http]\" && (curl -s -o /dev/null -w \"%{http_code}\\n\" http://127.0.0.1:5173 || echo \"curl-failed\")'",
     "build": "vite build",
     "preview": "vite preview",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "lucide-react": "^0.577.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "recharts": "^3.7.0"
