@@ -1,5 +1,12 @@
 const STORAGE_KEY = 'focusos.sessions.v1'
 
+export function generateId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  return Date.now().toString(36) + Math.random().toString(36).substring(2)
+}
+
 export function loadSessions() {
   if (typeof window === 'undefined' || !window.localStorage) {
     return []
