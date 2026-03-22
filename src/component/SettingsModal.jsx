@@ -1,33 +1,48 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, X, Trash2, ChevronUp, ChevronDown } from 'lucide-react'
 import { useSettings } from '../hooks/useSettings'
 import { generateId } from '../lib/sessionStorage'
 
 function NumberInput({ value, onChange, onBlur, min, max, step = 1, style, suffix }) {
+    const [localValue, setLocalValue] = useState(value ?? '')
+
+    useEffect(() => {
+        setLocalValue(value ?? '')
+    }, [value])
+
     const handleDecrement = () => {
-        const current = value || min
+        const current = Number(localValue) || min
         const next = Math.max(min, current - step)
+        setLocalValue(next)
         onChange({ target: { value: next } })
         if (onBlur) setTimeout(onBlur, 0)
     }
 
     const handleIncrement = () => {
-        const current = value || min
+        const current = Number(localValue) || min
         const next = Math.min(max, current + step)
+        setLocalValue(next)
         onChange({ target: { value: next } })
         if (onBlur) setTimeout(onBlur, 0)
     }
 
     const handleChange = (e) => {
         const val = e.target.value
+        setLocalValue(val)
+        if (val !== '') {
+            const num = Number(val)
+            if (!isNaN(num)) {
+                onChange({ target: { value: num } })
+            }
+        }
+    }
+
+    const handleBlur = (e) => {
+        let val = localValue;
         if (val === '') {
-            onChange({ target: { value: '' } })
-            return
+            setLocalValue(value)
         }
-        const num = Number(val)
-        if (!isNaN(num)) {
-            onChange({ target: { value: num } })
-        }
+        if (onBlur) onBlur(e)
     }
 
     return (
@@ -35,9 +50,9 @@ function NumberInput({ value, onChange, onBlur, min, max, step = 1, style, suffi
             <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
                 <input
                     type="text"
-                    value={value}
+                    value={localValue}
                     onChange={handleChange}
-                    onBlur={onBlur}
+                    onBlur={handleBlur}
                     style={{ background: 'transparent', border: 'none', color: 'white', padding: '0.4rem 0.5rem', width: '100%', textAlign: 'center', outline: 'none', fontSize: '1rem' }}
                 />
                 {suffix && <span style={{ paddingRight: '0.5rem', opacity: 0.7, fontSize: '0.9rem' }}>{suffix}</span>}
@@ -118,7 +133,7 @@ export default function SettingsModal({ onClose }) {
                             <NumberInput
                                 min={1} max={120}
                                 value={settings.workDuration}
-                                onChange={(e) => updateSettings({ workDuration: e.target.value === '' ? '' : Number(e.target.value) })}
+                                onChange={(e) => updateSettings({ workDuration: Number(e.target.value) })}
                                 onBlur={() => { if (!settings.workDuration) updateSettings({ workDuration: 25 }) }}
                             />
                         </label>
@@ -127,7 +142,7 @@ export default function SettingsModal({ onClose }) {
                             <NumberInput
                                 min={1} max={60}
                                 value={settings.shortBreakDuration}
-                                onChange={(e) => updateSettings({ shortBreakDuration: e.target.value === '' ? '' : Number(e.target.value) })}
+                                onChange={(e) => updateSettings({ shortBreakDuration: Number(e.target.value) })}
                                 onBlur={() => { if (!settings.shortBreakDuration) updateSettings({ shortBreakDuration: 5 }) }}
                             />
                         </label>
@@ -136,7 +151,7 @@ export default function SettingsModal({ onClose }) {
                             <NumberInput
                                 min={1} max={60}
                                 value={settings.longBreakDuration}
-                                onChange={(e) => updateSettings({ longBreakDuration: e.target.value === '' ? '' : Number(e.target.value) })}
+                                onChange={(e) => updateSettings({ longBreakDuration: Number(e.target.value) })}
                                 onBlur={() => { if (!settings.longBreakDuration) updateSettings({ longBreakDuration: 15 }) }}
                             />
                         </label>
@@ -145,7 +160,7 @@ export default function SettingsModal({ onClose }) {
                             <NumberInput
                                 min={1} max={10}
                                 value={settings.setsBeforeLongBreak}
-                                onChange={(e) => updateSettings({ setsBeforeLongBreak: e.target.value === '' ? '' : Number(e.target.value) })}
+                                onChange={(e) => updateSettings({ setsBeforeLongBreak: Number(e.target.value) })}
                                 onBlur={() => { if (!settings.setsBeforeLongBreak) updateSettings({ setsBeforeLongBreak: 4 }) }}
                             />
                         </label>
@@ -154,7 +169,7 @@ export default function SettingsModal({ onClose }) {
                             <NumberInput
                                 min={1} max={1440} step={10}
                                 value={settings.dailyGoalMinutes}
-                                onChange={(e) => updateSettings({ dailyGoalMinutes: e.target.value === '' ? '' : Number(e.target.value) })}
+                                onChange={(e) => updateSettings({ dailyGoalMinutes: Number(e.target.value) })}
                                 onBlur={() => { if (!settings.dailyGoalMinutes) updateSettings({ dailyGoalMinutes: 120 }) }}
                             />
                         </label>
@@ -173,7 +188,7 @@ export default function SettingsModal({ onClose }) {
                                     <NumberInput
                                         min={1} max={20}
                                         value={task.estimatedSets || 1}
-                                        onChange={(e) => handleUpdateEstimatedSets(task.id, e.target.value === '' ? '' : Number(e.target.value))}
+                                        onChange={(e) => handleUpdateEstimatedSets(task.id, Number(e.target.value))}
                                         onBlur={() => { if (!task.estimatedSets) handleUpdateEstimatedSets(task.id, 1) }}
                                         style={{ width: '100px' }}
                                         suffix="sets"
@@ -198,7 +213,7 @@ export default function SettingsModal({ onClose }) {
                                 <NumberInput
                                     min={1} max={20}
                                     value={newEstimatedSets}
-                                    onChange={(e) => setNewEstimatedSets(e.target.value === '' ? '' : Number(e.target.value))}
+                                    onChange={(e) => setNewEstimatedSets(Number(e.target.value))}
                                     onBlur={() => { if (!newEstimatedSets) setNewEstimatedSets(1) }}
                                     style={{ width: '100px' }}
                                     suffix="sets"

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState, useRef } from 'react'
+import { Suspense, lazy, useState, useRef, useEffect } from 'react'
 import { useTimer, PHASE } from '../hooks/useTimer'
 import { useSettings } from '../hooks/useSettings'
 import { appendSession, loadSessions, removeSessionById, generateId } from '../lib/sessionStorage'
@@ -93,12 +93,10 @@ export default function Timer() {
   let statusText = isRunning ? 'Running' : isAtInitial ? 'Ready' : 'Paused'
 
   // Update background gradient based on phase
-  import('react').then(({ useEffect }) => {
-    useEffect(() => {
-      document.body.style.background = getPhaseGradient(phase)
-      document.body.style.transition = 'background 0.8s ease'
-    }, [phase])
-  })
+  useEffect(() => {
+    document.body.style.background = getPhaseGradient(phase)
+    document.body.style.transition = 'background 0.8s ease'
+  }, [phase])
 
   // Calculate progress for the circular SVG
   const progressPercentage = (remainingSeconds / initialSecondsForPhase) * 100

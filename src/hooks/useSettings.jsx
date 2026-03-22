@@ -12,7 +12,7 @@ const defaultSettings = {
     shortBreakDuration: 5,
     longBreakDuration: 15,
     setsBeforeLongBreak: 4,
-    dailyGoalMinutes: 120, // Array of daily goal minutes Default 2 hours
+    dailyGoalMinutes: 120, // Daily goal in minutes (default 2 hours)
     autoStart: true, // auto-start next session
 }
 
@@ -33,7 +33,12 @@ export function SettingsProvider({ children }) {
     })
 
     useEffect(() => {
-        window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings))
+        if (typeof window === 'undefined' || !window.localStorage) return
+        try {
+            window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings))
+        } catch {
+            // Ignore persistence errors (e.g., quota exceeded, disabled storage)
+        }
     }, [settings])
 
     const updateSettings = (newSettings) => {

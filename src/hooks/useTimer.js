@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
-const WORK_AUDIO = new Audio('/sounds/work.mp3')
-const BREAK_AUDIO = new Audio('/sounds/break.mp3')
+const WORK_AUDIO = typeof Audio !== 'undefined' ? new Audio('/sounds/work.mp3') : null
+const BREAK_AUDIO = typeof Audio !== 'undefined' ? new Audio('/sounds/break.mp3') : null
 
 export const PHASE = {
   WORK: 'WORK',
@@ -64,15 +64,15 @@ export function useTimer(settings, onPhaseComplete) {
   const skipPhase = () => {
     clearTimer()
     setIsRunning(false)
-    handlePhaseComplete()
+    handlePhaseComplete(true)
   }
 
-  const handlePhaseComplete = () => {
+  const handlePhaseComplete = (isSkip = false) => {
     // Play sound based on the phase that just finished
-    if (phase === PHASE.WORK) {
+    if (phase === PHASE.WORK && WORK_AUDIO) {
       WORK_AUDIO.currentTime = 0;
       WORK_AUDIO.play().catch(e => console.log('Audio play failed:', e));
-    } else {
+    } else if (phase !== PHASE.WORK && BREAK_AUDIO) {
       BREAK_AUDIO.currentTime = 0;
       BREAK_AUDIO.play().catch(e => console.log('Audio play failed:', e));
     }
@@ -99,7 +99,7 @@ export function useTimer(settings, onPhaseComplete) {
     setRemainingSeconds(getInitialSeconds(nextPhase))
 
     // Notify caller that phase completed with full duration
-    if (onPhaseComplete) {
+    if (onPhaseComplete && !isSkip) {
       onPhaseComplete(phase, getInitialSeconds(phase))
     }
 
@@ -117,7 +117,7 @@ export function useTimer(settings, onPhaseComplete) {
           clearTimer()
           setIsRunning(false)
           // setTimeout prevents React state update warnings during render phase
-          setTimeout(handlePhaseComplete, 0)
+          setTimeout(() => handlePhaseComplete(false), 0)
           return 0
         }
         return prev - 1

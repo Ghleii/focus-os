@@ -191,8 +191,8 @@ export default function SessionAnalytics({ sessions, taskOptions }) {
                 itemStyle={{ color: '#000000', fontWeight: '500' }}
               />
               <Legend />
-              <Bar dataKey="estimated" name="Planned (Sets)" fill="#666666" />
-              <Bar dataKey="actual" name="Actual (Sets)" fill="#4dabf7" />
+              <Bar dataKey="estimated" name="Planned (min)" fill="#666666" />
+              <Bar dataKey="actual" name="Actual (min)" fill="#4dabf7" />
             </BarChart>
           </ResponsiveContainer>
         </div>
