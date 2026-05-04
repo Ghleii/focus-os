@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 
-const WORK_AUDIO = typeof Audio !== 'undefined' ? new Audio('/sounds/work.mp3') : null
-const BREAK_AUDIO = typeof Audio !== 'undefined' ? new Audio('/sounds/break.mp3') : null
+const base = import.meta.env.BASE_URL
+const WORK_AUDIO = typeof Audio !== 'undefined' ? new Audio(`${base}sounds/work.mp3`) : null
+const BREAK_AUDIO = typeof Audio !== 'undefined' ? new Audio(`${base}sounds/break.mp3`) : null
 
 export const PHASE = {
   WORK: 'WORK',
