@@ -16,7 +16,7 @@ function App() {
           zIndex: -1,
           pointerEvents: 'none', // Prevents background from blocking clicks
           backgroundColor: '#2b5876', // Base fallback color
-          backgroundImage: 'url("/background.jpg"), linear-gradient(135deg, #2b5876 0%, #4e4376 100%)',
+          backgroundImage: `url("${import.meta.env.BASE_URL}background.jpg"), linear-gradient(135deg, #2b5876 0%, #4e4376 100%)`,
           backgroundSize: 'cover, auto',
           backgroundPosition: 'center, center',
           backgroundRepeat: 'no-repeat, no-repeat',
