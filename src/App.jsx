@@ -25,7 +25,7 @@ function App() {
           backgroundRepeat: 'no-repeat, no-repeat',
         }}
       />
-      <Router basename={import.meta.env.BASE_URL}>
+      <Router>
         <Routes>
           <Route path="/" element={
             <div
