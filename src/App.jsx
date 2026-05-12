@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import { Clock as ClockIcon, Timer as TimerIcon } from 'lucide-react'
 import Timer from './component/Timer'
 import Clock from './component/Clock'
