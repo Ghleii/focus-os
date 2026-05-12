@@ -41,7 +41,7 @@ function buildDailyData(sessions) {
   })
 }
 
-function buildTaskData(sessions, taskOptions) {
+function buildTaskData(sessions, taskOptions, workDuration) {
   const totalsByTask = sessions.reduce((acc, session) => {
     const taskId = session.taskId
 
@@ -61,7 +61,7 @@ function buildTaskData(sessions, taskOptions) {
     .map((taskData) => ({
       task: taskData.label,
       actual: Math.round(taskData.actualSec / 60),
-      estimated: (taskData.estimatedSets * 25) // Default to 25 mins per estimated set for chart scale
+      estimated: taskData.estimatedSets * workDuration
     }))
     .sort((a, b) => b.actual - a.actual)
 }
@@ -88,7 +88,7 @@ function buildTimelineData(sessions) {
   })
 }
 
-export default function SessionAnalytics({ sessions, taskOptions }) {
+export default function SessionAnalytics({ sessions, taskOptions, settings }) {
   const [activeTab, setActiveTab] = useState('daily')
   const [selectedChartTaskId, setSelectedChartTaskId] = useState('all')
 
@@ -102,7 +102,7 @@ export default function SessionAnalytics({ sessions, taskOptions }) {
   }
 
   const dailyData = buildDailyData(sessions)
-  let taskData = buildTaskData(sessions, taskOptions)
+  let taskData = buildTaskData(sessions, taskOptions, settings?.workDuration ?? 25)
 
   // Filter taskData if a specific task is selected
   if (selectedChartTaskId !== 'all') {

@@ -26,30 +26,23 @@ function getPhaseGradient(phase) {
 export default function Timer() {
   const { settings } = useSettings()
   const lastLoggedRef = useRef(0)
-  const handlePhaseAutoComplete = (completedPhase, plannedSec) => {
+  const handlePhaseAutoComplete = (completedPhase, { actualSec, plannedSec, startedAt, endedAt }) => {
     if (completedPhase === PHASE.WORK) {
       const now = Date.now()
       // Guard against double logs triggered by React strict mode or interval race conditions
       if (now - lastLoggedRef.current < 2000) {
-        return // Skip if we just logged one within 2 seconds
+        return
       }
       lastLoggedRef.current = now
 
-      const endedAt = new Date()
-      // Since it completed naturally, actual = planned
-      const startedAt = new Date(endedAt.getTime() - plannedSec * 1000)
-
-      const newSession = {
+      const next = appendSession({
         id: generateId(),
-        taskId: selectedTaskId, // captured from closure/state
+        taskId: selectedTaskId,
         plannedSec,
-        actualSec: plannedSec,
-        startedAt: startedAt.toISOString(),
-        endedAt: endedAt.toISOString(),
-      }
-
-      // Append to storage directly and sync state to ensure it's saved correctly
-      const next = appendSession(newSession)
+        actualSec,
+        startedAt,
+        endedAt,
+      })
       setSessions(next)
     }
   }
@@ -63,7 +56,8 @@ export default function Timer() {
     pause,
     stop,
     skipPhase,
-    initialSecondsForPhase
+    initialSecondsForPhase,
+    phaseStartRef,
   } = useTimer(settings, handlePhaseAutoComplete)
 
   const [sessions, setSessions] = useState(() => loadSessions())
@@ -105,22 +99,21 @@ export default function Timer() {
   const strokeDashoffset = circleCircumference - (progressPercentage / 100) * circleCircumference
 
   const handleStop = () => {
-    const actualSec = initialSecondsForPhase - remainingSeconds
+    // Read timing from refs before stop() clears them
+    const endedAtMs = Date.now()
+    const startedAtMs = phaseStartRef.current ?? (endedAtMs - (initialSecondsForPhase - remainingSeconds) * 1000)
+    const actualSec = Math.max(0, Math.round((endedAtMs - startedAtMs) / 1000))
 
     try {
-      if (actualSec > 0 && phase === PHASE.WORK) { // Only log work sessions
-        const endedAt = new Date()
-        const startedAt = new Date(endedAt.getTime() - actualSec * 1000)
-
+      if (actualSec > 0 && phase === PHASE.WORK) {
         const next = appendSession({
           id: generateId(),
           taskId: selectedTaskId,
           plannedSec: initialSecondsForPhase,
           actualSec,
-          startedAt: startedAt.toISOString(),
-          endedAt: endedAt.toISOString(),
+          startedAt: new Date(startedAtMs).toISOString(),
+          endedAt: new Date(endedAtMs).toISOString(),
         })
-
         setSessions(next)
       }
     } finally {
@@ -306,7 +299,7 @@ export default function Timer() {
             </div>
 
             <Suspense fallback={<p style={{ textAlign: 'center', color: 'white' }}>Loading analytics...</p>}>
-              <SessionAnalytics sessions={sessions} taskOptions={settings.tasks} />
+              <SessionAnalytics sessions={sessions} taskOptions={settings.tasks} settings={settings} />
             </Suspense>
 
             <SessionHistory
