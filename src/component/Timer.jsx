@@ -99,10 +99,14 @@ export default function Timer() {
   const strokeDashoffset = circleCircumference - (progressPercentage / 100) * circleCircumference
 
   const handleStop = () => {
-    // Read timing from refs before stop() clears them
     const endedAtMs = Date.now()
-    const startedAtMs = phaseStartRef.current ?? (endedAtMs - (initialSecondsForPhase - remainingSeconds) * 1000)
-    const actualSec = Math.max(0, Math.round((endedAtMs - startedAtMs) / 1000))
+    // When paused, phaseStartRef hasn't been adjusted for the current pause duration,
+    // so derive elapsed from remainingSeconds (accurate as of the pause moment) instead.
+    const elapsedSec = isRunning
+      ? Math.round((endedAtMs - (phaseStartRef.current ?? endedAtMs - (initialSecondsForPhase - remainingSeconds) * 1000)) / 1000)
+      : initialSecondsForPhase - remainingSeconds
+    const actualSec = Math.max(0, elapsedSec)
+    const startedAtMs = endedAtMs - actualSec * 1000
 
     try {
       if (actualSec > 0 && phase === PHASE.WORK) {
