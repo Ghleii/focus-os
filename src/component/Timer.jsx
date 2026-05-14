@@ -156,7 +156,7 @@ export default function Timer() {
       <div style={{ width: '100%', maxWidth: '500px', display: 'flex', flexDirection: 'column', gap: '1.5rem', padding: '0 1rem' }}>
 
         {/* Main Timer Panel */}
-        <section className="glass-panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 2rem', gap: '1rem' }}>
+        <section className="glass-panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 'clamp(1.5rem, 6vw, 3rem) clamp(1rem, 5vw, 2rem)', gap: '1rem' }}>
 
           {phase === PHASE.WORK && (
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '1.5rem' }}>
@@ -174,9 +174,9 @@ export default function Timer() {
             </div>
           )}
 
-          <div style={{ textAlign: 'center', position: 'relative', width: '300px', height: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center', position: 'relative', width: 'clamp(240px, 72vw, 300px)', height: 'clamp(240px, 72vw, 300px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             {/* SVG Circular Progress Background */}
-            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+            <svg viewBox="0 0 300 300" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
               <circle
                 cx="150" cy="150" r={circleRadius}
                 fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8"
@@ -194,10 +194,10 @@ export default function Timer() {
             </svg>
 
             <div style={{ zIndex: 10 }}>
-              <p style={{ margin: 0, fontSize: '1.1rem', fontWeight: '500', color: phaseColor, letterSpacing: '2px', textTransform: 'uppercase' }}>
+              <p style={{ margin: 0, fontSize: 'clamp(0.85rem, 3vw, 1.1rem)', fontWeight: '500', color: phaseColor, letterSpacing: '2px', textTransform: 'uppercase' }}>
                 {phaseLabel}
               </p>
-              <h1 style={{ fontSize: '4.5rem', fontWeight: '300', margin: '0.2rem 0', lineHeight: '1', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
+              <h1 style={{ fontSize: 'clamp(3rem, 16vw, 4.5rem)', fontWeight: '300', margin: '0.2rem 0', lineHeight: '1', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
                 {formatTime(remainingSeconds)}
               </h1>
             </div>
@@ -230,7 +230,7 @@ export default function Timer() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginTop: '2rem' }}>
+          <div className="timer-controls">
             <button
               onClick={start}
               disabled={isRunning || remainingSeconds === 0}

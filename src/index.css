@@ -22,6 +22,7 @@ body {
   background-color: transparent !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 #root {
@@ -112,4 +113,31 @@ ul {
   transition: stroke-dashoffset 1s linear;
   transform: rotate(-90deg);
   transform-origin: 50% 50%;
+}
+
+/* Timer controls button row */
+.timer-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .glass-panel {
+    padding: 1.25rem 1rem;
+    border-radius: 16px;
+  }
+
+  .timer-controls {
+    gap: 0.5rem;
+  }
+}
+
+/* Landscape on smartphones: shrink vertical spacing */
+@media (max-height: 500px) and (orientation: landscape) {
+  .timer-controls {
+    margin-top: 0.75rem;
+  }
 }
