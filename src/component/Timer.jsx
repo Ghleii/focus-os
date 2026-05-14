@@ -4,7 +4,7 @@ import { useSettings } from '../hooks/useSettings'
 import { appendSession, loadSessions, removeSessionById, generateId } from '../lib/sessionStorage'
 import SessionHistory from './SessionHistory'
 import SettingsModal from './SettingsModal'
-import { Play, Pause, Square, Settings, Menu, X, SkipForward } from 'lucide-react'
+import { Play, Pause, Square, X, SkipForward } from 'lucide-react'
 
 const SessionAnalytics = lazy(() => import('./SessionAnalytics'))
 
@@ -23,7 +23,7 @@ function getPhaseGradient(phase) {
   }
 }
 
-export default function Timer() {
+export default function Timer({ isSettingsOpen, setIsSettingsOpen, isHistoryOpen, setIsHistoryOpen }) {
   const { settings } = useSettings()
   const lastLoggedRef = useRef(0)
   const handlePhaseAutoComplete = (completedPhase, { actualSec, plannedSec, startedAt, endedAt }) => {
@@ -62,10 +62,6 @@ export default function Timer() {
 
   const [sessions, setSessions] = useState(() => loadSessions())
   const [selectedTaskId, setSelectedTaskId] = useState(settings.tasks[0]?.id || '')
-
-  // UI States
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
   const isAtInitial = remainingSeconds === initialSecondsForPhase
 
@@ -143,16 +139,6 @@ export default function Timer() {
 
   return (
     <>
-      {/* Top Navigation */}
-      <div style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 50, display: 'flex', gap: '0.5rem' }}>
-        <button className="glass-panel" onClick={() => setIsSettingsOpen(true)} style={{ padding: '0.75rem', borderRadius: '50%', border: 'none' }} title="Settings">
-          <Settings size={24} />
-        </button>
-        <button className="glass-panel" onClick={() => setIsHistoryOpen(true)} style={{ padding: '0.75rem', borderRadius: '50%', border: 'none' }} title="History & Analytics">
-          <Menu size={24} />
-        </button>
-      </div>
-
       <div style={{ width: '100%', maxWidth: '500px', display: 'flex', flexDirection: 'column', gap: '1.5rem', padding: '0 1rem' }}>
 
         {/* Main Timer Panel */}
